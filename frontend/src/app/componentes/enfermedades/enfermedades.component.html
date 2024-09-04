@@ -1,0 +1,154 @@
+<script src="../ganado-registro/ganado-registro.component.ts"></script>
+<div class="row">
+  <div class="text-end col-lg-6 mb-1">
+    <div class="row">
+      <div class="col-lg-10">
+        <input class="align-self-end form-control" type="text" placeholder="Búsqueda inteligente" [(ngModel)]="textoBusqueda">
+      </div>
+      <div class="col-lg-2">
+        <button class="btn btn-primary">Buscar</button>
+      </div>
+    </div>
+  </div>
+  <div class="text-end col-lg-5 mb-2">
+    <button type="button" class="btn btn-success" data-mdb-ripple-init (click)="openModal()">+ Añadir</button>
+  </div>
+</div>
+<table class="table">
+  <thead class="table-dark">
+  <tr>
+    <th scope="col">#</th>
+    <th scope="col">Codigo Ganado</th>
+    <th scope="col">Nombre Ganado</th>
+    <th scope="col">Tipo de control</th>
+    <th scope="col">Peso</th>
+    <th scope="col">Fecha de control</th>
+    <th scope="col">Observaciones</th>
+    <th scope="col">Estado</th>
+    <th scope="col">Acciones</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let enfermedades of enfermedadesService.enfermedades; let i = index ">
+    <th scope="row">{{ i + 1 }}</th>
+    <td>{{ enfermedades.codigoGanado}}</td>
+    <td>{{ enfermedades.nombreGanado}}</td>
+    <td>{{ enfermedades.tipo_control }}</td>
+    <td>{{ enfermedades.pesoActual  }}</td>
+    <td>{{ enfermedades.fechaControl}}</td>
+    <td>{{ enfermedades.observaciones  }}</td>
+    <td>{{ enfermedades.estado}}</td>
+    <td>
+      <button class="btn btn-primary btn-sm" (click)="openModalEdit(enfermedades)">Editar</button>
+      <button class="btn btn-danger btn-sm" (click)="deleteEnfermedades(enfermedades.control_id)" >Eliminar</button>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+
+<!-- Modal -->
+<div class="modal fade" #exampleModal tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Añadir</h5>
+        <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="form" (ngSubmit)="guardar($event)" novalidate>
+          <div class="form-group">
+            <label for="ganadoId">Selecciona el nombre</label>
+            <select class="form-control" id="ganadoId" formControlName="ganadoId">
+              <option *ngFor="let ganado of ganadoService.ganados" [value]="ganado.ganado_id">{{ ganado.nombre_ganado }}</option>
+            </select>
+            <!-- Mostrar el mensaje de error para el control ganado -->
+            <div *ngIf="form.get('ganadoId')?.errors && (form.get('ganadoId')?.dirty || form.get('ganadoId')?.touched)" class="alert">
+              <div *ngIf="form.get('ganadoId')?.hasError('required')" class="text-danger">
+                <b>*</b> El ganado es requerido
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tipo_control">Tipo control</label>
+            <input type="text" class="form-control" id="tipo_control" formControlName="tipo_control">
+          </div>
+
+          <div class="form-group">
+            <label for="pesoActual">Peso actual</label>
+            <input type="number" class="form-control" id="pesoActual" formControlName="pesoActual">
+          </div>
+
+          <div class="form-group">
+            <label for="fechaControl">Fecha control</label>
+            <input type="date" class="form-control" id="fechaControl" formControlName="fechaControl" [max]="getCurrentDate()">
+          </div>
+
+          <div class="form-group">
+            <label for="observaciones">Observaciones</label>
+            <input type="text" class="form-control" id="observaciones" formControlName="observaciones">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar-->
+<div class="modal fade" #exampleModalEdit tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelEdit" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="align-self-center">
+          <h3 class="modal-title" id="exampleModalLabelEdit">Actualizar reproduccion</h3>
+        </div>
+        <button type="button" class="close" (click)="closeModalEdit()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form #ganaoFromEdit ="ngForm">
+          <input type="hidden" class="form-control" id="ganado_idEdit" value="{{controlEnfermedades.control_id}}" [(ngModel)]="controlEnfermedades.control_id" name="reproduccion_id">
+          <div class="form-group">
+            <label for="nombreGanadoEdit">Nombre Ganado</label>
+            <select class="form-control" id="nombreGanadoEdit" [value]="controlEnfermedades.ganado_id" (select)="controlEnfermedades.ganado_id" [ngModel]="controlEnfermedades.nombreGanado" name="ganado_id">
+              <option *ngFor="let ganado of ganadoService.ganados" [value]="ganado.ganado_id">{{ ganado.nombre_ganado }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tipo_controlEdit">Tipo control</label>
+            <input type="text" class="form-control" id="tipo_controlEdit" value="{{controlEnfermedades.tipo_control}}" [ngModel]="controlEnfermedades.tipo_control"  name="tipo_control"  >
+          </div>
+          <div class="form-group">
+            <label for="pesoActualEdit">Peso Actual</label>
+            <input type="number" class="form-control" id="pesoActualEdit" value="{{controlEnfermedades.pesoActual}}" [ngModel]="controlEnfermedades.pesoActual" name="pesoActual">
+          </div>
+          <div class="form-group">
+            <label for="fechaControlEdit">Fecha control</label>
+            <input type="date" class="form-control" id="fechaControlEdit" format="dd/mm/yyyy" value="{{controlEnfermedades.fechaControl}}" [ngModel]="controlEnfermedades.fechaControl"  name="fechaControl"  [max]="getCurrentDate()">
+          </div>
+          <div class="form-group">
+            <label for="observacionesEdit">Observaciones</label>
+            <textarea class="form-control" id="observacionesEdit" rows="3" value="{{controlEnfermedades.observaciones}}" [ngModel]="controlEnfermedades.observaciones" name="observaciones"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Creado: {{controlEnfermedades.creado | date:'short'}}</label>
+          </div>
+          <div class="form-group">
+            <label>Actualizado: {{controlEnfermedades.modificado | date:'short'}}</label>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" (click)="putEnfermedades(ganaoFromEdit,$event)">Guardar</button>
+            <button type="button" class="btn btn-secondary" (click)="closeModalEdit()">Cerrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,82 @@
+services:
+  # Microservicio de Alimentación
+  servicio-alimentacion:
+    build:
+      context: ./servicio-alimentacion
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "8082:8082"
+    networks:
+      - ganaderia-network
+
+  # Microservicio de Control
+  servicio-control:
+    build:
+      context: ./sevicio-control
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "8083:8083"
+    networks:
+      - ganaderia-network
+
+  # Microservicio de Autenticación
+  servicio-auth:
+    build:
+      context: ./servicio-auth
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "8081:8081"
+    networks:
+      - ganaderia-network
+
+  # API Gateway para la Web
+  api-gateway-ganaderia:
+    build:
+      context: ./api-gateway-ganaderia
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    networks:
+      - ganaderia-network
+    depends_on:
+      - servicio-alimentacion
+      - servicio-control
+      - servicio-auth
+
+  # API Gateway para el Móvil
+  api-gateway-movil:
+    build:
+      context: ./api-gateway-movil
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    networks:
+      - ganaderia-network
+    depends_on:
+      - servicio-control
+      - servicio-auth
+
+networks:
+  ganaderia-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
